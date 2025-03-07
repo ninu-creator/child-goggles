@@ -4,15 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Child Tracking System</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-    <style>
-        input { display: block; margin: 5px 0; padding: 8px; }
-        input:invalid { border: 2px solid red; }
-        #map { width: 100%; height: 300px; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
 </head>
 <body>
     <div id="loginPage">
@@ -45,62 +41,94 @@
         <p><b>Device ID:</b> <span id="displayDeviceId"></span></p>
         <p><b>Parent Name:</b> <span id="displayParentName"></span></p>
         <p><b>Contact Number:</b> <span id="displayContactNumber"></span></p>
-        <div id="map"></div>
+        <div id="map" style="width: 100%; height: 300px;"></div>
         <button onclick="setSafeZone()">Set Safe Zone</button>
         <button onclick="stopAlert()">Stop Alert</button>
     </div>
 
     <script>
-        let map, drawnItems;
+        let map, drawnItems, safeZone;
+
         function login() {
-            validateForm(['username', 'password']) && (document.getElementById('loginPage').style.display = 'none',
-            document.getElementById('dashboard').style.display = 'block');
+            let username = document.getElementById("username");
+            let password = document.getElementById("password");
+            
+            if (!username.value || !password.value) {
+                alert("All fields are required!");
+                if (!username.value) username.style.border = "2px solid red";
+                if (!password.value) password.style.border = "2px solid red";
+                return;
+            }
+            
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
         }
 
         function navigate() {
             let option = document.getElementById('menu').value;
-            document.getElementById('profile').style.display = option === 'profile' ? 'block' : 'none';
-            if (option === 'logout') location.reload();
+            if (option === 'profile') {
+                document.getElementById('profile').style.display = 'block';
+            } else if (option === 'logout') {
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('loginPage').style.display = 'block';
+            }
         }
 
         function submitDetails() {
-            if (!validateForm(['childName', 'deviceId', 'parentName', 'contactNumber'])) return;
-            ['childName', 'deviceId', 'parentName', 'contactNumber'].forEach(id => 
-                document.getElementById('display' + id.charAt(0).toUpperCase() + id.slice(1)).innerText = document.getElementById(id).value);
+            let childName = document.getElementById('childName');
+            let deviceId = document.getElementById('deviceId');
+            let parentName = document.getElementById('parentName');
+            let contactNumber = document.getElementById('contactNumber');
+
+            if (!childName.value || !deviceId.value || !parentName.value || !contactNumber.value) {
+                alert("All fields are required!");
+                [childName, deviceId, parentName, contactNumber].forEach(field => {
+                    if (!field.value) field.style.border = "2px solid red";
+                });
+                return;
+            }
+
+            document.getElementById('displayChildName').innerText = childName.value;
+            document.getElementById('displayDeviceId').innerText = deviceId.value;
+            document.getElementById('displayParentName').innerText = parentName.value;
+            document.getElementById('displayContactNumber').innerText = contactNumber.value;
+            
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('trackingPage').style.display = 'block';
-            initMap();
+            
+            initializeMap();
         }
 
-        function validateForm(fields) {
-            let valid = true;
-            fields.forEach(id => {
-                let field = document.getElementById(id);
-                if (!field.value) { field.style.border = '2px solid red'; valid = false; }
-                else field.style.border = '';
-            });
-            if (!valid) alert('All fields are required!');
-            return valid;
-        }
-
-        function initMap() {
+        function initializeMap() {
             map = L.map('map').setView([20, 0], 2);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
-            new L.Control.Draw({
+
+            let drawControl = new L.Control.Draw({
                 edit: { featureGroup: drawnItems },
-                draw: { polygon: true, marker: false, circle: false, rectangle: true, polyline: false }
-            }).addTo(map);
-            map.on('draw:created', e => drawnItems.clearLayers(), drawnItems.addLayer(e.layer));
+                draw: { polygon: true, rectangle: true, circle: false, marker: false }
+            });
+            map.addControl(drawControl);
+
+            map.on(L.Draw.Event.CREATED, function (event) {
+                drawnItems.clearLayers(); // Remove previous safe zones
+                let layer = event.layer;
+                drawnItems.addLayer(layer);
+                safeZone = layer;
+            });
         }
 
         function setSafeZone() {
-            alert(drawnItems.getLayers().length ? 'Safe Zone Set!' : 'Draw a Safe Zone first!');
+            if (!safeZone) {
+                alert("Please draw a safe zone on the map first!");
+                return;
+            }
+            alert("Safe Zone Set!");
         }
 
         function stopAlert() {
-            alert('Alert Stopped!');
+            alert("Alert Stopped!");
         }
     </script>
 </body>
