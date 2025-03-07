@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Child Tracking System</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #map { height: 500px; }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #alert { color: red; font-weight: bold; display: none; }
+        #safezone-btn { margin: 10px; padding: 10px; cursor: pointer; background-color: blue; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h1>Child Tracking System</h1>
+    <button id="safezone-btn">Set Safe Zone</button>
+    <div id="alert">ALERT! Child has left the safe zone!</div>
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([0, 0], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        var childMarker = L.marker([0, 0]).addTo(map);
+        var safeZone = L.polygon([], { color: 'blue' }).addTo(map);
+        var settingSafeZone = false;
+
+        document.getElementById('safezone-btn').addEventListener('click', function() {
+            safeZone.setLatLngs([]);
+            settingSafeZone = true;
+        });
+
+        map.on('click', function (e) {
+            if (settingSafeZone) {
+                safeZone.addLatLng(e.latlng);
+            }
+        });
+
+        function updateChildLocation(lat, lng) {
+            childMarker.setLatLng([lat, lng]);
+            map.setView([lat, lng]);
+
+            if (!insideSafeZone(lat, lng)) {
+                document.getElementById('alert').style.display = 'block';
+            } else {
+                document.getElementById('alert').style.display = 'none';
+            }
+        }
+
+        function insideSafeZone(lat, lng) {
+            return safeZone.getBounds().contains([lat, lng]);
+        }
+
+        setInterval(() => {
+            fetch('http://your-esp32-ip/location')
+                .then(response => response.json())
+                .then(data => updateChildLocation(data.lat, data.lng));
+        }, 600000); // 10 minutes interval
+    </script>
+</body>
+</html>
