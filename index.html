@@ -47,11 +47,11 @@
         </select>
         <div id="profile" style="display:none;">
             <h3>Profile</h3>
-            <input type="text" id="childName" placeholder="Child Name" required>
-            <input type="text" id="deviceId" placeholder="Device ID" required>
-            <input type="text" id="parentName" placeholder="Parent Name" required>
-            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-            <button onclick="submitDetails()">Submit</button>
+            <input type="text" id="childName" placeholder="Child Name" required onkeydown="handleEnter(event, 'deviceId')">
+            <input type="text" id="deviceId" placeholder="Device ID" required onkeydown="handleEnter(event, 'parentName')">
+            <input type="text" id="parentName" placeholder="Parent Name" required onkeydown="handleEnter(event, 'contactNumber')">
+            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required onkeypress="return event.charCode >= 48 && event.charCode <= 57" onkeydown="handleEnter(event, 'submitButton')">
+            <button id="submitButton" onclick="submitDetails()">Submit</button>
         </div>
     </div>
     
@@ -64,18 +64,10 @@
         <div id="map"></div>
         <button onclick="setSafeZone()">Set Safe Zone</button>
         <button onclick="stopAlert()">Stop Alert</button>
-        <button onclick="goBack()">Go Back</button>
     </div>
 
     <script>
-        let map, drawnItems, safeZone;
-
-        function handleEnter(event, nextFieldId) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                document.getElementById(nextFieldId).focus();
-            }
-        }
+        let map, drawnItems, safeZone, childMarker;
 
         function login() {
             let username = document.getElementById("username");
@@ -105,14 +97,21 @@
             }
         }
 
+        function handleEnter(event, nextField) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById(nextField).focus();
+            }
+        }
+
         function submitDetails() {
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('trackingPage').style.display = 'block';
-        }
-
-        function goBack() {
-            document.getElementById('trackingPage').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById("displayChildName").innerText = document.getElementById("childName").value;
+            document.getElementById("displayDeviceId").innerText = document.getElementById("deviceId").value;
+            document.getElementById("displayParentName").innerText = document.getElementById("parentName").value;
+            document.getElementById("displayContactNumber").innerText = document.getElementById("contactNumber").value;
+            initializeMap();
         }
 
         function initializeMap() {
