@@ -13,9 +13,9 @@
 <body>
     <div id="loginPage">
         <h2>Login</h2>
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button onclick="login()">Login</button>
+        <input type="text" id="username" placeholder="Username" required onkeydown="handleEnter(event, 'password')">
+        <input type="password" id="password" placeholder="Password" required onkeydown="handleEnter(event, 'loginButton')">
+        <button id="loginButton" onclick="login()">Login</button>
     </div>
     
     <div id="dashboard" style="display:none;">
@@ -27,11 +27,11 @@
         </select>
         <div id="profile" style="display:none;">
             <h3>Profile</h3>
-            <input type="text" id="childName" placeholder="Child Name" required>
-            <input type="text" id="deviceId" placeholder="Device ID" required>
-            <input type="text" id="parentName" placeholder="Parent Name" required>
-            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required>
-            <button onclick="submitDetails()">Submit</button>
+            <input type="text" id="childName" placeholder="Child Name" required onkeydown="handleEnter(event, 'deviceId')">
+            <input type="text" id="deviceId" placeholder="Device ID" required onkeydown="handleEnter(event, 'parentName')">
+            <input type="text" id="parentName" placeholder="Parent Name" required onkeydown="handleEnter(event, 'contactNumber')">
+            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required onkeydown="handleEnter(event, 'submitButton')">
+            <button id="submitButton" onclick="submitDetails()">Submit</button>
         </div>
     </div>
     
@@ -48,6 +48,13 @@
 
     <script>
         let map, drawnItems, safeZone;
+
+        function handleEnter(event, nextFieldId) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById(nextFieldId).focus();
+            }
+        }
 
         function login() {
             let username = document.getElementById("username");
@@ -71,6 +78,9 @@
             } else if (option === 'logout') {
                 document.getElementById('dashboard').style.display = 'none';
                 document.getElementById('loginPage').style.display = 'block';
+                alert("Logged out successfully!");
+                document.getElementById("username").value = "";
+                document.getElementById("password").value = "";
             }
         }
 
@@ -100,19 +110,19 @@
         }
 
         function initializeMap() {
-            map = L.map('map').setView([20, 0], 2);
+            map = L.map('map').setView([20, 0], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
 
             let drawControl = new L.Control.Draw({
                 edit: { featureGroup: drawnItems },
-                draw: { polygon: true, rectangle: true, circle: false, marker: false }
+                draw: { polygon: true, rectangle: true, circle: { shapeOptions: { radius: 100 } }, marker: false }
             });
             map.addControl(drawControl);
 
             map.on(L.Draw.Event.CREATED, function (event) {
-                drawnItems.clearLayers(); // Remove previous safe zones
+                drawnItems.clearLayers(); 
                 let layer = event.layer;
                 drawnItems.addLayer(layer);
                 safeZone = layer;
