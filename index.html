@@ -10,10 +10,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://source.unsplash.com/1600x900/?children,tracking') no-repeat center center fixed;
+            background-size: cover;
+        }
         #map {
             width: 100%;
             height: 400px;
             border: 2px solid black;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        #dashboard select {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -34,11 +47,11 @@
         </select>
         <div id="profile" style="display:none;">
             <h3>Profile</h3>
-            <input type="text" id="childName" placeholder="Child Name" required onkeydown="handleEnter(event, 'deviceId')">
-            <input type="text" id="deviceId" placeholder="Device ID" required onkeydown="handleEnter(event, 'parentName')">
-            <input type="text" id="parentName" placeholder="Parent Name" required onkeydown="handleEnter(event, 'contactNumber')">
-            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required onkeypress="return event.charCode >= 48 && event.charCode <= 57" onkeydown="handleEnter(event, 'submitButton')">
-            <button id="submitButton" onclick="submitDetails()">Submit</button>
+            <input type="text" id="childName" placeholder="Child Name" required>
+            <input type="text" id="deviceId" placeholder="Device ID" required>
+            <input type="text" id="parentName" placeholder="Parent Name" required>
+            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+            <button onclick="submitDetails()">Submit</button>
         </div>
     </div>
     
@@ -55,13 +68,6 @@
 
     <script>
         let map, drawnItems, safeZone, childMarker;
-
-        function handleEnter(event, nextFieldId) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                document.getElementById(nextFieldId).focus();
-            }
-        }
 
         function login() {
             let username = document.getElementById("username");
@@ -91,31 +97,6 @@
             }
         }
 
-        function submitDetails() {
-            let childName = document.getElementById('childName');
-            let deviceId = document.getElementById('deviceId');
-            let parentName = document.getElementById('parentName');
-            let contactNumber = document.getElementById('contactNumber');
-
-            if (!childName.value || !deviceId.value || !parentName.value || !contactNumber.value) {
-                alert("All fields are required!");
-                [childName, deviceId, parentName, contactNumber].forEach(field => {
-                    if (!field.value) field.style.border = "2px solid red";
-                });
-                return;
-            }
-
-            document.getElementById('displayChildName').innerText = childName.value;
-            document.getElementById('displayDeviceId').innerText = deviceId.value;
-            document.getElementById('displayParentName').innerText = parentName.value;
-            document.getElementById('displayContactNumber').innerText = contactNumber.value;
-            
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('trackingPage').style.display = 'block';
-            
-            initializeMap();
-        }
-
         function initializeMap() {
             map = L.map('map').setView([20, 0], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -124,7 +105,7 @@
 
             let drawControl = new L.Control.Draw({
                 edit: { featureGroup: drawnItems },
-                draw: { polygon: true, rectangle: true, circle: { shapeOptions: { radius: 300 } }, marker: false }
+                draw: { polygon: true, rectangle: true, circle: { shapeOptions: { radius: 500 } }, marker: false }
             });
             map.addControl(drawControl);
 
@@ -134,8 +115,6 @@
                 drawnItems.addLayer(layer);
                 safeZone = layer;
             });
-
-            childMarker = L.marker([20, 0]).addTo(map);
         }
 
         function setSafeZone() {
@@ -144,10 +123,6 @@
                 return;
             }
             alert("Safe Zone Set!");
-        }
-
-        function stopAlert() {
-            alert("Alert Stopped!");
         }
     </script>
 </body>
