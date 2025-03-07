@@ -4,68 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Child Tracking System</title>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 80%;
-            margin: auto;
-        }
-        #map {
-            height: 300px;
-            width: 100%;
-            border-radius: 10px;
-        }
-        .info-section {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-            padding: 20px;
-            background: #f4f4f4;
-            border-radius: 10px;
-        }
-        .info-section input {
-            padding: 8px;
-            width: 200px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .btn {
-            background: blue;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Child Tracking System</h1>
-    <div class="container">
-        <button class="btn">Set Safe Zone</button>
-        <div id="map"></div>
-        <div class="info-section">
-            <input type="text" placeholder="Child Name">
-            <input type="text" placeholder="Device ID">
-            <input type="text" placeholder="Parent Name">
-            <input type="text" placeholder="Contact Number">
+    <div id="loginPage">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+    </div>
+    
+    <div id="dashboard" style="display:none;">
+        <h2>Dashboard</h2>
+        <select id="menu" onchange="navigate()">
+            <option value="">Menu</option>
+            <option value="profile">Profile</option>
+            <option value="logout">Logout</option>
+        </select>
+        <div id="profile" style="display:none;">
+            <h3>Profile</h3>
+            <input type="text" id="childName" placeholder="Child Name" required>
+            <input type="text" id="deviceId" placeholder="Device ID" required>
+            <input type="text" id="parentName" placeholder="Parent Name" required>
+            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required>
+            <button onclick="submitDetails()">Submit</button>
         </div>
+    </div>
+    
+    <div id="trackingPage" style="display:none;">
+        <h2>Child Tracking System</h2>
+        <p><b>Child Name:</b> <span id="displayChildName"></span></p>
+        <p><b>Device ID:</b> <span id="displayDeviceId"></span></p>
+        <p><b>Parent Name:</b> <span id="displayParentName"></span></p>
+        <p><b>Contact Number:</b> <span id="displayContactNumber"></span></p>
+        <div id="map" style="width: 100%; height: 300px; background: lightgray;">Map Placeholder</div>
+        <button onclick="setSafeZone()">Set Safe Zone</button>
+        <button onclick="stopAlert()">Stop Alert</button>
     </div>
 
     <script>
-        var map = L.map('map').setView([0, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        var marker = L.marker([0, 0]).addTo(map);
+        function login() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function navigate() {
+            let option = document.getElementById('menu').value;
+            if (option === 'profile') {
+                document.getElementById('profile').style.display = 'block';
+            } else if (option === 'logout') {
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('loginPage').style.display = 'block';
+            }
+        }
+
+        function submitDetails() {
+            let childName = document.getElementById('childName').value;
+            let deviceId = document.getElementById('deviceId').value;
+            let parentName = document.getElementById('parentName').value;
+            let contactNumber = document.getElementById('contactNumber').value;
+
+            if (!childName || !deviceId || !parentName || !contactNumber) {
+                alert("All fields are required!");
+                return;
+            }
+
+            document.getElementById('displayChildName').innerText = childName;
+            document.getElementById('displayDeviceId').innerText = deviceId;
+            document.getElementById('displayParentName').innerText = parentName;
+            document.getElementById('displayContactNumber').innerText = contactNumber;
+            
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('trackingPage').style.display = 'block';
+        }
+
+        function setSafeZone() {
+            alert("Safe Zone Set!");
+        }
+
+        function stopAlert() {
+            alert("Alert Stopped!");
+        }
     </script>
 </body>
 </html>
