@@ -17,7 +17,7 @@
         }
         #map {
             width: 100%;
-            height: 400px;
+            height: 500px;
             border: 2px solid black;
             margin-top: 20px;
             border-radius: 10px;
@@ -97,25 +97,8 @@
             }
         }
 
-        function handleEnter(event, nextField) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                document.getElementById(nextField).focus();
-            }
-        }
-
-        function submitDetails() {
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('trackingPage').style.display = 'block';
-            document.getElementById("displayChildName").innerText = document.getElementById("childName").value;
-            document.getElementById("displayDeviceId").innerText = document.getElementById("deviceId").value;
-            document.getElementById("displayParentName").innerText = document.getElementById("parentName").value;
-            document.getElementById("displayContactNumber").innerText = document.getElementById("contactNumber").value;
-            initializeMap();
-        }
-
         function initializeMap() {
-            map = L.map('map').setView([20, 0], 15);
+            map = L.map('map').setView([20, 0], 19);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
