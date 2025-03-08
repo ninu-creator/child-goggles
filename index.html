@@ -22,35 +22,18 @@
             margin-top: 20px;
             border-radius: 10px;
         }
-        #dashboard select {
-            display: block;
-            margin: 10px auto;
-            padding: 10px;
-            font-size: 16px;
-        }
     </style>
 </head>
 <body>
-    <div id="loginPage">
-        <h2>Login</h2>
-        <input type="text" id="username" placeholder="Username" required onkeydown="handleEnter(event, 'password')">
-        <input type="password" id="password" placeholder="Password" required onkeydown="handleEnter(event, 'loginButton')">
-        <button id="loginButton" onclick="login()">Login</button>
-    </div>
-    
-    <div id="dashboard" style="display:none;">
-        <h2>Dashboard</h2>
-        <select id="menu" onchange="navigate()">
-            <option value="">Menu</option>
-            <option value="profile">Profile</option>
-            <option value="logout">Logout</option>
-        </select>
-        <div id="profile" style="display:none;">
+    <div id="dashboard">
+        <button onclick="goBack()">Back</button>
+        <button onclick="goNext()">Next</button>
+        <div id="profile">
             <h3>Profile</h3>
-            <input type="text" id="childName" placeholder="Child Name" required onkeydown="handleEnter(event, 'deviceId')">
-            <input type="text" id="deviceId" placeholder="Device ID" required onkeydown="handleEnter(event, 'parentName')">
-            <input type="text" id="parentName" placeholder="Parent Name" required onkeydown="handleEnter(event, 'contactNumber')">
-            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required onkeypress="return event.charCode >= 48 && event.charCode <= 57" onkeydown="handleEnter(event, 'submitButton')">
+            <input type="text" id="childName" placeholder="Child Name" required>
+            <input type="text" id="deviceId" placeholder="Device ID" required>
+            <input type="text" id="parentName" placeholder="Parent Name" required>
+            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required>
             <button id="submitButton" onclick="submitDetails()">Submit</button>
         </div>
     </div>
@@ -63,79 +46,32 @@
         <p><b>Contact Number:</b> <span id="displayContactNumber"></span></p>
         <div id="map"></div>
         <button onclick="setSafeZone()">Set Safe Zone</button>
-        <button onclick="stopAlert()">Stop Alert</button>
     </div>
 
     <script>
-        let map, drawnItems, safeZone, childMarker;
-
-        function login() {
-            let username = document.getElementById("username");
-            let password = document.getElementById("password");
-            
-            if (!username.value || !password.value) {
-                alert("All fields are required!");
-                if (!username.value) username.style.border = "2px solid red";
-                if (!password.value) password.style.border = "2px solid red";
-                return;
-            }
-            
-            document.getElementById('loginPage').style.display = 'none';
+        function goBack() {
+            document.getElementById('trackingPage').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
         }
 
-        function navigate() {
-            let option = document.getElementById('menu').value;
-            if (option === 'profile') {
-                document.getElementById('profile').style.display = 'block';
-            } else if (option === 'logout') {
-                document.getElementById('dashboard').style.display = 'none';
-                document.getElementById('loginPage').style.display = 'block';
-                alert("Logged out successfully!");
-                document.getElementById("username").value = "";
-                document.getElementById("password").value = "";
+        function goNext() {
+            let childName = document.getElementById("childName").value;
+            let deviceId = document.getElementById("deviceId").value;
+            let parentName = document.getElementById("parentName").value;
+            let contactNumber = document.getElementById("contactNumber").value;
+            
+            if (!childName || !deviceId || !parentName || !contactNumber) {
+                alert("Please fill in all profile details before proceeding!");
+                return;
             }
-        }
-
-        function submitDetails() {
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('trackingPage').style.display = 'block';
             initializeMap();
         }
 
-        function handleEnter(event, nextFieldId) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                document.getElementById(nextFieldId).focus();
-            }
-        }
-
         function initializeMap() {
-            map = L.map('map').setView([20, 0], 18);
+            let map = L.map('map').setView([20, 0], 19);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            drawnItems = new L.FeatureGroup();
-            map.addLayer(drawnItems);
-
-            let drawControl = new L.Control.Draw({
-                edit: { featureGroup: drawnItems },
-                draw: { polygon: true, rectangle: true, circle: { shapeOptions: { radius: 1000 } }, marker: false }
-            });
-            map.addControl(drawControl);
-
-            map.on(L.Draw.Event.CREATED, function (event) {
-                drawnItems.clearLayers(); 
-                let layer = event.layer;
-                drawnItems.addLayer(layer);
-                safeZone = layer;
-            });
-        }
-
-        function setSafeZone() {
-            if (!safeZone) {
-                alert("Please draw a safe zone on the map first!");
-                return;
-            }
-            alert("Safe Zone Set!");
         }
     </script>
 </body>
