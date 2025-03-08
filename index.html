@@ -25,9 +25,15 @@
     </style>
 </head>
 <body>
-    <div id="dashboard">
+    <div id="loginPage">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+    </div>
+    
+    <div id="dashboard" style="display:none;">
         <button onclick="goBack()">Back</button>
-        <button onclick="goNext()">Next</button>
         <div id="profile">
             <h3>Profile</h3>
             <input type="text" id="childName" placeholder="Child Name" required>
@@ -49,12 +55,25 @@
     </div>
 
     <script>
+        let map, drawnItems, childMarker;
+
+        function login() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            if (username === "admin" && password === "1234") {
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+            } else {
+                alert("Invalid credentials!");
+            }
+        }
+
         function goBack() {
             document.getElementById('trackingPage').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
         }
 
-        function goNext() {
+        function submitDetails() {
             let childName = document.getElementById("childName").value;
             let deviceId = document.getElementById("deviceId").value;
             let parentName = document.getElementById("parentName").value;
@@ -66,12 +85,60 @@
             }
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('trackingPage').style.display = 'block';
+            
+            document.getElementById('displayChildName').textContent = childName;
+            document.getElementById('displayDeviceId').textContent = deviceId;
+            document.getElementById('displayParentName').textContent = parentName;
+            document.getElementById('displayContactNumber').textContent = contactNumber;
+            
             initializeMap();
         }
 
         function initializeMap() {
-            let map = L.map('map').setView([20, 0], 19);
+            map = L.map('map').setView([20, 0], 18);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            let drawControl = new L.Control.Draw({
+                edit: { featureGroup: drawnItems },
+                draw: {
+                    polygon: false,
+                    polyline: false,
+                    rectangle: false,
+                    circle: true,
+                    marker: false,
+                    circlemarker: false
+                }
+            });
+            map.addControl(drawControl);
+
+            map.on(L.Draw.Event.CREATED, function (event) {
+                let layer = event.layer;
+                drawnItems.clearLayers();
+                drawnItems.addLayer(layer);
+                alert("Safe zone set successfully!");
+            });
+
+            updateChildPosition();
+        }
+
+        function setSafeZone() {
+            if (drawnItems.getLayers().length === 0) {
+                alert("Please draw a safe zone before setting it.");
+            } else {
+                alert("Safe zone set successfully!");
+            }
+        }
+
+        function updateChildPosition() {
+            let lat = 20.5937, lng = 78.9629; // Example coordinates for demonstration
+            if (!childMarker) {
+                childMarker = L.marker([lat, lng]).addTo(map).bindPopup("Child's Location").openPopup();
+            } else {
+                childMarker.setLatLng([lat, lng]);
+            }
+            setTimeout(updateChildPosition, 5000); // Simulating real-time updates every 5 seconds
         }
     </script>
 </body>
