@@ -33,7 +33,6 @@
     </div>
     
     <div id="dashboard" style="display:none;">
-        <button onclick="goBack()">Back</button>
         <div id="profile">
             <h3>Profile</h3>
             <input type="text" id="childName" placeholder="Child Name" required>
@@ -45,6 +44,7 @@
     </div>
     
     <div id="trackingPage" style="display:none;">
+        <button onclick="goBack()">Back</button>
         <h2>Child Tracking System</h2>
         <p><b>Child Name:</b> <span id="displayChildName"></span></p>
         <p><b>Device ID:</b> <span id="displayDeviceId"></span></p>
@@ -52,10 +52,11 @@
         <p><b>Contact Number:</b> <span id="displayContactNumber"></span></p>
         <div id="map"></div>
         <button onclick="setSafeZone()">Set Safe Zone</button>
+        <button onclick="stopAlert()">Stop Alert</button>
     </div>
 
     <script>
-        let map, drawnItems, childMarker;
+        let map, drawnItems, childMarker, safeZone;
 
         function login() {
             let username = document.getElementById("username").value;
@@ -69,8 +70,10 @@
         }
 
         function goBack() {
-            document.getElementById('trackingPage').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
+            if (document.getElementById('trackingPage').style.display === 'block') {
+                document.getElementById('trackingPage').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            }
         }
 
         function submitDetails() {
@@ -95,7 +98,7 @@
         }
 
         function initializeMap() {
-            map = L.map('map').setView([20, 0], 18);
+            map = L.map('map').setView([20, 0], 19);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
@@ -103,10 +106,10 @@
             let drawControl = new L.Control.Draw({
                 edit: { featureGroup: drawnItems },
                 draw: {
-                    polygon: false,
+                    polygon: true,
                     polyline: false,
                     rectangle: false,
-                    circle: true,
+                    circle: false,
                     marker: false,
                     circlemarker: false
                 }
@@ -114,9 +117,9 @@
             map.addControl(drawControl);
 
             map.on(L.Draw.Event.CREATED, function (event) {
-                let layer = event.layer;
                 drawnItems.clearLayers();
-                drawnItems.addLayer(layer);
+                safeZone = event.layer;
+                drawnItems.addLayer(safeZone);
                 alert("Safe zone set successfully!");
             });
 
@@ -124,21 +127,25 @@
         }
 
         function setSafeZone() {
-            if (drawnItems.getLayers().length === 0) {
+            if (!safeZone) {
                 alert("Please draw a safe zone before setting it.");
             } else {
                 alert("Safe zone set successfully!");
             }
         }
 
+        function stopAlert() {
+            alert("Alert stopped!");
+        }
+
         function updateChildPosition() {
-            let lat = 20.5937, lng = 78.9629; // Example coordinates for demonstration
+            let lat = 20.5937, lng = 78.9629; 
             if (!childMarker) {
                 childMarker = L.marker([lat, lng]).addTo(map).bindPopup("Child's Location").openPopup();
             } else {
                 childMarker.setLatLng([lat, lng]);
             }
-            setTimeout(updateChildPosition, 5000); // Simulating real-time updates every 5 seconds
+            setTimeout(updateChildPosition, 5000);
         }
     </script>
 </body>
