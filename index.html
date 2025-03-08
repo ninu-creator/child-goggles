@@ -52,6 +52,7 @@
         <p><b>Contact Number:</b> <span id="displayContactNumber"></span></p>
         <div id="map"></div>
         <button onclick="setSafeZone()">Set Safe Zone</button>
+        <button onclick="setCircleSafeZone()">Set Circle Safe Zone</button>
         <button onclick="stopAlert()">Stop Alert</button>
     </div>
 
@@ -106,10 +107,10 @@
             let drawControl = new L.Control.Draw({
                 edit: { featureGroup: drawnItems },
                 draw: {
-                    polygon: true,
+                    polygon: { shapeOptions: { color: 'blue' }, allowIntersection: false, showArea: true, maxPoints: 6 },
                     polyline: false,
                     rectangle: false,
-                    circle: false,
+                    circle: true,
                     marker: false,
                     circlemarker: false
                 }
@@ -132,6 +133,10 @@
             } else {
                 alert("Safe zone set successfully!");
             }
+        }
+
+        function setCircleSafeZone() {
+            alert("Draw a circle to set the safe zone.");
         }
 
         function stopAlert() {
