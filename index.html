@@ -39,7 +39,7 @@
             <input type="text" id="childName" placeholder="Child Name" required>
             <input type="text" id="deviceId" placeholder="Device ID" required>
             <input type="text" id="parentName" placeholder="Parent Name" required>
-            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required>
+            <input type="text" id="contactNumber" placeholder="Contact Number" maxlength="10" required oninput="this.value=this.value.replace(/\D/g,'')">
             <button id="submitButton" onclick="submitDetails()">Submit</button>
         </div>
     </div>
