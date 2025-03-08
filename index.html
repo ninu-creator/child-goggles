@@ -108,9 +108,9 @@
                 edit: { featureGroup: drawnItems },
                 draw: {
                     polygon: { shapeOptions: { color: 'blue' }, allowIntersection: false, showArea: true, maxPoints: 6 },
+                    circle: { shapeOptions: { color: 'red' } },
                     polyline: false,
                     rectangle: false,
-                    circle: true,
                     marker: false,
                     circlemarker: false
                 }
@@ -125,18 +125,6 @@
             });
 
             updateChildPosition();
-        }
-
-        function setSafeZone() {
-            if (!safeZone) {
-                alert("Please draw a safe zone before setting it.");
-            } else {
-                alert("Safe zone set successfully!");
-            }
-        }
-
-        function setCircleSafeZone() {
-            alert("Draw a circle to set the safe zone.");
         }
 
         function stopAlert() {
