@@ -51,13 +51,10 @@
         <p><b>Parent Name:</b> <span id="displayParentName"></span></p>
         <p><b>Contact Number:</b> <span id="displayContactNumber"></span></p>
         <div id="map"></div>
-        <button onclick="setSafeZone()">Set Safe Zone</button>
-        <button onclick="setCircleSafeZone()">Set Circle Safe Zone</button>
-        <button onclick="stopAlert()">Stop Alert</button>
     </div>
 
     <script>
-        let map, drawnItems, childMarker, safeZone;
+        let map, childMarker;
 
         function login() {
             let username = document.getElementById("username").value;
@@ -71,74 +68,38 @@
         }
 
         function goBack() {
-            if (document.getElementById('trackingPage').style.display === 'block') {
-                document.getElementById('trackingPage').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-            }
+            document.getElementById('trackingPage').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
         }
 
         function submitDetails() {
-            let childName = document.getElementById("childName").value;
-            let deviceId = document.getElementById("deviceId").value;
-            let parentName = document.getElementById("parentName").value;
-            let contactNumber = document.getElementById("contactNumber").value;
-            
-            if (!childName || !deviceId || !parentName || !contactNumber) {
-                alert("Please fill in all profile details before proceeding!");
-                return;
-            }
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('trackingPage').style.display = 'block';
-            
-            document.getElementById('displayChildName').textContent = childName;
-            document.getElementById('displayDeviceId').textContent = deviceId;
-            document.getElementById('displayParentName').textContent = parentName;
-            document.getElementById('displayContactNumber').textContent = contactNumber;
-            
             initializeMap();
         }
 
         function initializeMap() {
             map = L.map('map').setView([20, 0], 19);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            drawnItems = new L.FeatureGroup();
-            map.addLayer(drawnItems);
-
-            let drawControl = new L.Control.Draw({
-                edit: { featureGroup: drawnItems },
-                draw: {
-                    polygon: { shapeOptions: { color: 'blue' }, allowIntersection: false, showArea: true, maxPoints: 6 },
-                    circle: { shapeOptions: { color: 'red' }, metric: true },
-                    polyline: false,
-                    rectangle: false,
-                    marker: false,
-                    circlemarker: false
-                }
-            });
-            map.addControl(drawControl);
-
-            map.on(L.Draw.Event.CREATED, function (event) {
-                drawnItems.clearLayers();
-                safeZone = event.layer;
-                drawnItems.addLayer(safeZone);
-                alert("Safe zone set successfully!");
-            });
-
             updateChildPosition();
         }
 
-        function stopAlert() {
-            alert("Alert stopped!");
-        }
-
         function updateChildPosition() {
-            let lat = 20.5937, lng = 78.9629; 
-            if (!childMarker) {
-                childMarker = L.marker([lat, lng]).addTo(map).bindPopup("Child's Location").openPopup();
-            } else {
-                childMarker.setLatLng([lat, lng]);
+            const urlParams = new URLSearchParams(window.location.search);
+            const lat = parseFloat(urlParams.get("lat"));
+            const lon = parseFloat(urlParams.get("lon"));
+
+            if (!isNaN(lat) && !isNaN(lon)) {
+                const newLocation = [lat, lon];
+                if (!childMarker) {
+                    childMarker = L.marker(newLocation).addTo(map).bindPopup("Child's Location").openPopup();
+                } else {
+                    childMarker.setLatLng(newLocation);
+                }
+                map.setView(newLocation, 19);
             }
-            setTimeout(updateChildPosition, 5000);
+
+            setTimeout(updateChildPosition, 10000);
         }
     </script>
 </body>
