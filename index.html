@@ -11,7 +11,8 @@
         #map { height: 500px; width: 100%; margin-top: 10px; }
         #status { font-size: 18px; font-weight: bold; color: green; }
         #alertBox { display: none; background: red; color: white; padding: 10px; font-size: 20px; margin-top: 10px; }
-        #safeZoneInfo { margin-top: 10px; font-size: 16px; }
+        .buttons { margin-top: 10px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -19,41 +20,47 @@
     <h2>Child Tracker - Live GPS Location</h2>
     <p id="status">Waiting for location updates...</p>
     <div id="alertBox">🚨 ALERT: Child is OUTSIDE the Safe Zone! 🚨</div>
-    <div id="safeZoneInfo">Safe Zone: Center (12.9716, 77.5946), Radius: 500m</div>
+    
+    <div class="buttons">
+        <button onclick="setSafeZone()">Set Safe Zone</button>
+        <button onclick="stopAlert()">Stop Alert</button>
+    </div>
+
     <div id="map"></div>
 
     <script>
-        // Initialize the map centered on an arbitrary location
-        var map = L.map('map').setView([12.9716, 77.5946], 15); 
+        var map = L.map('map').setView([12.9716, 77.5946], 15);
 
-        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Marker for the child's current location
         var childMarker = L.marker([12.9716, 77.5946]).addTo(map)
             .bindPopup("Child's Location").openPopup();
 
-        // Safe zone circle (adjust as needed)
-        var safeZoneCenter = [12.9716, 77.5946]; // Default safe zone center
-        var safeZoneRadius = 500; // Radius in meters
-        var safeZoneCircle = L.circle(safeZoneCenter, {
-            color: "blue",
-            fillColor: "#87CEFA",
-            fillOpacity: 0.3,
-            radius: safeZoneRadius
-        }).addTo(map);
+        var safeZone = null;
+        var safeZoneType = "circle"; // Default to circle
+        var safeZoneCenter = null;
+        var safeZoneRadius = 500;
+        var polygonPoints = [];
 
         function updateLocation(lat, lon) {
             var childLatLng = L.latLng(lat, lon);
             childMarker.setLatLng(childLatLng);
             map.setView(childLatLng, 15);
 
-            // Calculate distance to safe zone center
-            var distance = childLatLng.distanceTo(L.latLng(safeZoneCenter));
+            var isInside = false;
+            
+            if (safeZone) {
+                if (safeZoneType === "circle") {
+                    var distance = childLatLng.distanceTo(safeZoneCenter);
+                    isInside = distance <= safeZoneRadius;
+                } else if (safeZoneType === "polygon") {
+                    isInside = L.polygon(polygonPoints).getBounds().contains(childLatLng);
+                }
+            }
 
-            if (distance > safeZoneRadius) {
+            if (!isInside) {
                 document.getElementById("alertBox").style.display = "block";
                 document.getElementById("status").innerHTML = "🚨 OUTSIDE Safe Zone!";
                 document.getElementById("status").style.color = "red";
@@ -64,7 +71,6 @@
             }
         }
 
-        // Function to fetch data from ESP32
         function fetchLocation() {
             fetch("https://your-website.com/get_location") // Replace with actual API
                 .then(response => response.json())
@@ -76,8 +82,60 @@
                 .catch(error => console.error("Error fetching location:", error));
         }
 
-        // Auto-refresh location every 10 seconds
         setInterval(fetchLocation, 10000);
+
+        function setSafeZone() {
+            alert("Click on the map to set the Safe Zone (Circle or Polygon). Max 6 points for Polygon.");
+
+            safeZoneType = prompt("Enter 'circle' or 'polygon' for the safe zone:", "circle");
+
+            if (safeZone) {
+                map.removeLayer(safeZone);
+                polygonPoints = [];
+            }
+
+            if (safeZoneType === "circle") {
+                map.once("click", function (e) {
+                    safeZoneCenter = e.latlng;
+                    safeZone = L.circle(safeZoneCenter, {
+                        color: "blue",
+                        fillColor: "#87CEFA",
+                        fillOpacity: 0.3,
+                        radius: safeZoneRadius
+                    }).addTo(map);
+                    alert("Safe Zone set as a Circle!");
+                });
+            } else if (safeZoneType === "polygon") {
+                alert("Click up to 6 points to define the Polygon Safe Zone.");
+
+                map.on("click", function (e) {
+                    if (polygonPoints.length < 6) {
+                        polygonPoints.push(e.latlng);
+                        if (polygonPoints.length >= 3) {
+                            if (safeZone) {
+                                map.removeLayer(safeZone);
+                            }
+                            safeZone = L.polygon(polygonPoints, {
+                                color: "blue",
+                                fillColor: "#87CEFA",
+                                fillOpacity: 0.3
+                            }).addTo(map);
+                        }
+                    } else {
+                        alert("Polygon Safe Zone limit reached (6 points max).");
+                        map.off("click");
+                    }
+                });
+            } else {
+                alert("Invalid Safe Zone type! Choose 'circle' or 'polygon'.");
+            }
+        }
+
+        function stopAlert() {
+            document.getElementById("alertBox").style.display = "none";
+            document.getElementById("status").innerHTML = "✅ Inside Safe Zone";
+            document.getElementById("status").style.color = "green";
+        }
     </script>
 
 </body>
