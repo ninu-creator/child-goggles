@@ -30,27 +30,9 @@
     </div>
 
     <div id="map"></div>
-    <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
     <script>
-
-        database.ref("/child_data").on("value", (snapshot) => {
-    if (snapshot.exists()) {
-        let data = snapshot.val();
-        console.log("Received GPS Data:", data); // ✅ Debugging log
-        if (data.latitude && data.longitude) {
-            updateLocation(data.latitude, data.longitude);
-        }
-    } else {
-        console.log("No GPS data found in Firebase!");
-    }
-}, (error) => {
-    console.error("Firebase read failed:", error);
-});
-
-        // ✅ Firebase Configuration (Replace with your credentials)
+        // ✅ Firebase Configuration
         var firebaseConfig = {
             apiKey: "AIzaSyB4q1dm0LMlqxtN52VcnVhslOfHgAfWQ5U",
             authDomain: "child-tracking-8a305.firebaseapp.com",
@@ -58,9 +40,10 @@
             projectId: "child-tracking-8a305",
             storageBucket: "child-tracking-8a305.firebasestorage.app",
             messagingSenderId: "415514911616",
-            appId: "1:415514911616:web:050f79d0e758d285c05765",
-
+            appId: "1:415514911616:web:050f79d0e758d285c05765"
         };
+
+        // ✅ Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         var database = firebase.database();
 
