@@ -69,13 +69,13 @@
             childMarker.setLatLng(childLatLng);
             map.setView(childLatLng, 15);
 
-            var isInside = false;
-            
+            var isInside = true;
+
             if (safeZone) {
-                if (safeZoneType === "circle") {
+                if (safeZoneType === "circle" && safeZoneCenter) {
                     var distance = childLatLng.distanceTo(safeZoneCenter);
                     isInside = distance <= safeZoneRadius;
-                } else if (safeZoneType === "polygon") {
+                } else if (safeZoneType === "polygon" && polygonPoints.length > 2) {
                     isInside = L.polygon(polygonPoints).getBounds().contains(childLatLng);
                 }
             }
@@ -93,7 +93,7 @@
 
         // ✅ Function to Fetch GPS Location from Firebase
         function fetchLocation() {
-            database.ref("/child_data").on("value", (snapshot) => {
+            database.ref("/child_tracker").on("value", (snapshot) => { // 🔥 Fixed path
                 if (snapshot.exists()) {
                     let data = snapshot.val();
                     console.log("Received GPS Data:", data);
@@ -161,10 +161,4 @@
         // ✅ Function to Stop Alert
         function stopAlert() {
             document.getElementById("alertBox").style.display = "none";
-            document.getElementById("status").innerHTML = "✅ Inside Safe Zone";
-            document.getElementById("status").style.color = "green";
-        }
-    </script>
-
-</body>
-</html>
+            do
