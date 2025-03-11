@@ -22,6 +22,7 @@
 
     <h2>Child Tracker - Live GPS Location</h2>
     <p id="status">Waiting for location updates...</p>
+    <p><strong>Last Updated:</strong> <span id="datetime">N/A</span></p>
     <div id="alertBox">🚨 ALERT: Child is OUTSIDE the Safe Zone! 🚨</div>
     
     <div class="buttons">
@@ -99,6 +100,7 @@
                     console.log("Received GPS Data:", data);
                     if (data.latitude && data.longitude) {
                         updateLocation(data.latitude, data.longitude);
+                        document.getElementById("datetime").innerText = data.datetime || "N/A";
                     }
                 } else {
                     console.log("No GPS data found in Firebase!");
